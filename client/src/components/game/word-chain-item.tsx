@@ -8,6 +8,7 @@ interface WordChainItemProps {
   isValid: boolean;
   isCurrent: boolean;
   changedLetterIndex?: number;
+  targetWord?: string;
   onSubmit?: () => void;
 }
 
@@ -17,6 +18,7 @@ export function WordChainItem({
   isValid, 
   isCurrent,
   changedLetterIndex,
+  targetWord = '',
   onSubmit
 }: WordChainItemProps) {
   
@@ -38,6 +40,8 @@ export function WordChainItem({
               letter={letter}
               isChanged={changedLetterIndex === letterIndex}
               isCurrent={isCurrent}
+              targetWord={targetWord}
+              index={letterIndex}
             />
           ))}
         </div>

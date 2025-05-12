@@ -68,7 +68,6 @@ export function useGameState() {
   const [gameState, setGameState] = useState<GameState>(INITIAL_GAME_STATE);
   const [settings, setSettings] = useState<GameSettings>(DEFAULT_SETTINGS);
   const [stats, setStats] = useState<GameStats>(INITIAL_STATS);
-  const [hints, setHints] = useState<string[]>([]);
   const [elapsedTime, setElapsedTime] = useState(0);
   const [error, setError] = useState('');
   const [hasSavedGame, setHasSavedGame] = useState(false);
@@ -224,7 +223,6 @@ export function useGameState() {
     
     setElapsedTime(0);
     setScreen('gameplay');
-    setHints([]);
     
     return true;
   }, [generateRandomPuzzle]);
@@ -362,56 +360,10 @@ export function useGameState() {
       
       setElapsedTime(0);
       setError('');
-      setHints([]);
       
       return true;
     }
     return false;
-  }, [gameState]);
-
-  const generateHints = useCallback(async () => {
-    if (!gameState.wordChain.length) return;
-    
-    setError('');
-    
-    try {
-      const lastWord = gameState.wordChain[gameState.wordChain.length - 1].word;
-      
-      // Call the API to get hints
-      const response = await fetch(`/api/word-hints?word=${lastWord.toLowerCase()}&limit=3`);
-      if (!response.ok) throw new Error('Failed to fetch hints');
-      
-      const data = await response.json();
-      setHints(data.hints || []);
-      
-      if (data.hints?.length === 0) {
-        // Fallback to simple hints if no API hints
-        generateFallbackHints();
-      }
-    } catch (error) {
-      console.error('Error getting hints:', error);
-      // Fallback to simple hints
-      generateFallbackHints();
-    }
-  }, [gameState]);
-
-  const generateFallbackHints = useCallback(() => {
-    const lastWord = gameState.wordChain[gameState.wordChain.length - 1].word;
-    const target = gameState.endWord;
-    
-    // Simple hint strategy: For demo purposes only
-    const possibleHints = [];
-    
-    // Try changing letters to match the target word
-    for (let i = 0; i < lastWord.length; i++) {
-      if (lastWord[i] !== target[i]) {
-        const hint = lastWord.substring(0, i) + target[i] + lastWord.substring(i + 1);
-        possibleHints.push(hint);
-      }
-    }
-    
-    // Only show 2 hints max
-    setHints(possibleHints.slice(0, 2));
   }, [gameState]);
 
   const resetGame = useCallback(() => {
@@ -419,7 +371,6 @@ export function useGameState() {
     setScreen('home');
     setError('');
     setElapsedTime(0);
-    setHints([]);
     setHasSavedGame(false);
     localStorage.removeItem('wordLadderGameState');
   }, []);
@@ -440,6 +391,9 @@ export function useGameState() {
     ? Math.min(100, Math.round((gameState.wordChain.length - 1) / (gameState.endWord.length * 1.5) * 100))
     : 0;
 
+  // Empty array for hints to maintain interface compatibility
+  const hints: string[] = [];
+
   return {
     screen,
     setScreen,
@@ -458,7 +412,7 @@ export function useGameState() {
     submitWord,
     resetGame,
     updateSettings,
-    generateHints,
+    generateHints: async () => {}, // No-op placeholder function
     undoLastMove,
     resetCurrentGame,
     generateRandomPuzzle

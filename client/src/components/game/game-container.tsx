@@ -48,7 +48,7 @@ export function GameContainer() {
             formatTime={gameState.formatTime}
             progress={gameState.progress}
             error={gameState.error}
-            hints={gameState.hints}
+            hints={[]} // Empty array for interface compatibility
             onSubmitWord={gameState.submitWord}
             onGenerateHints={gameState.generateHints}
             onUndoMove={gameState.undoLastMove}

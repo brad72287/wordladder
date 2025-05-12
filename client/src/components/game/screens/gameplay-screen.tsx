@@ -85,6 +85,17 @@ export function GameplayScreen({
           </div>
         </div>
         
+        <div className="bg-gray-50 p-3 rounded-lg mb-4 text-xs">
+          <div className="flex items-center mb-1">
+            <div className="w-4 h-4 bg-green-500 rounded-sm mr-2"></div>
+            <span>Letter matches the target word</span>
+          </div>
+          <div className="flex items-center">
+            <div className="w-4 h-4 bg-blue-500 rounded-sm mr-2"></div>
+            <span>Letter changed from previous word</span>
+          </div>
+        </div>
+        
         {/* Game controls */}
         <div className="flex justify-between mb-4">
           <Button
@@ -116,6 +127,7 @@ export function GameplayScreen({
               word={item.word}
               isValid={item.isValid}
               changedLetterIndex={item.changedLetterIndex}
+              targetWord={gameState.endWord}
               isCurrent={false}
             />
           ))}
@@ -127,6 +139,7 @@ export function GameplayScreen({
               word={currentWord.padEnd(gameState.startWord.length, ' ')}
               isValid={true}
               isCurrent={true}
+              targetWord={gameState.endWord}
               onSubmit={handleSubmitWord}
             />
           )}
@@ -137,36 +150,6 @@ export function GameplayScreen({
           <div className="mb-4 text-error-500 text-sm font-medium bg-red-50 p-3 rounded-md">
             {error}
           </div>
-        )}
-        
-        {/* Hints and suggestions */}
-        {hints.length > 0 && (
-          <div className="bg-gray-50 rounded-lg p-3 text-sm mb-4">
-            <h3 className="font-medium text-gray-700 mb-1">Hints</h3>
-            <p className="text-gray-600 mb-2">Try one of these valid words:</p>
-            <div className="flex flex-wrap gap-2">
-              {hints.map((hint, index) => (
-                <Button
-                  key={index}
-                  variant="ghost"
-                  className="px-2 py-1 bg-primary-50 text-primary-700 rounded-md font-mono h-auto"
-                  onClick={() => setCurrentWord(hint)}
-                >
-                  {hint}
-                </Button>
-              ))}
-            </div>
-          </div>
-        )}
-        
-        {/* Generate hints button */}
-        {hints.length === 0 && gameState.wordChain.length > 0 && (
-          <Button
-            className="mb-4 text-primary-600 border border-primary-600 bg-white hover:bg-primary-50 w-full"
-            onClick={onGenerateHints}
-          >
-            <i className="fas fa-lightbulb mr-2"></i> Get Hints
-          </Button>
         )}
       </div>
       
