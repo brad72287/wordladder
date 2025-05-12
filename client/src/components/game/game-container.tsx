@@ -37,6 +37,7 @@ export function GameContainer() {
             onStartGame={gameState.startNewGame}
             onCancel={() => gameState.setScreen('home')}
             error={gameState.error}
+            isGeneratingPuzzle={gameState.isGeneratingPuzzle}
           />
         )}
         
@@ -50,6 +51,8 @@ export function GameContainer() {
             hints={gameState.hints}
             onSubmitWord={gameState.submitWord}
             onGenerateHints={gameState.generateHints}
+            onUndoMove={gameState.undoLastMove}
+            onResetGame={gameState.resetCurrentGame}
           />
         )}
         

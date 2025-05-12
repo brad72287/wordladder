@@ -15,6 +15,8 @@ interface GameplayScreenProps {
   hints: string[];
   onSubmitWord: (word: string) => Promise<boolean>;
   onGenerateHints: () => Promise<void>;
+  onUndoMove: () => boolean;
+  onResetGame: () => boolean;
 }
 
 export function GameplayScreen({ 
@@ -25,7 +27,9 @@ export function GameplayScreen({
   error,
   hints,
   onSubmitWord,
-  onGenerateHints
+  onGenerateHints,
+  onUndoMove,
+  onResetGame
 }: GameplayScreenProps) {
   const [currentWord, setCurrentWord] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -81,6 +85,28 @@ export function GameplayScreen({
           </div>
         </div>
         
+        {/* Game controls */}
+        <div className="flex justify-between mb-4">
+          <Button
+            size="sm"
+            variant="outline"
+            className="text-gray-600 text-xs"
+            onClick={onUndoMove}
+            disabled={gameState.wordChain.length <= 1}
+          >
+            <i className="fas fa-undo mr-1"></i> Undo
+          </Button>
+          
+          <Button
+            size="sm"
+            variant="outline"
+            className="text-gray-600 text-xs"
+            onClick={onResetGame}
+          >
+            <i className="fas fa-sync-alt mr-1"></i> Reset
+          </Button>
+        </div>
+        
         {/* Word chain container */}
         <div className="space-y-2 mb-4">
           {gameState.wordChain.map((item, index) => (
@@ -120,9 +146,14 @@ export function GameplayScreen({
             <p className="text-gray-600 mb-2">Try one of these valid words:</p>
             <div className="flex flex-wrap gap-2">
               {hints.map((hint, index) => (
-                <span key={index} className="px-2 py-1 bg-primary-50 text-primary-700 rounded-md font-mono">
+                <Button
+                  key={index}
+                  variant="ghost"
+                  className="px-2 py-1 bg-primary-50 text-primary-700 rounded-md font-mono h-auto"
+                  onClick={() => setCurrentWord(hint)}
+                >
                   {hint}
-                </span>
+                </Button>
               ))}
             </div>
           </div>

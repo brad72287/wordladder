@@ -1,6 +1,7 @@
 import { useState, useEffect, useCallback } from 'react';
 import { validateWord, areOneLetterApart } from '@/lib/word-validator';
-import { saveGameState, loadGameState, saveGameStats, loadGameStats } from '@/lib/game-utils';
+import { saveGameState, loadGameState, saveGameStats, loadGameStats, getRandomWordWithDifficulty } from '@/lib/game-utils';
+import { apiRequest } from '@/lib/queryClient';
 
 export type GameScreen = 'home' | 'setup' | 'gameplay' | 'complete';
 export type DifficultyLevel = 'easy' | 'medium' | 'hard';
@@ -71,6 +72,7 @@ export function useGameState() {
   const [elapsedTime, setElapsedTime] = useState(0);
   const [error, setError] = useState('');
   const [hasSavedGame, setHasSavedGame] = useState(false);
+  const [isGeneratingPuzzle, setIsGeneratingPuzzle] = useState(false);
 
   // Load persisted game state and settings
   useEffect(() => {
@@ -110,8 +112,87 @@ export function useGameState() {
     }
   }, [gameState]);
 
-  const startNewGame = useCallback((startWord: string, endWord: string, difficulty: DifficultyLevel) => {
-    if (!startWord || !endWord) {
+  // Generate random words for start and end based on difficulty
+  const generateRandomPuzzle = useCallback(async (difficulty: DifficultyLevel) => {
+    setIsGeneratingPuzzle(true);
+    setError('');
+    
+    try {
+      // Get length based on difficulty
+      let wordLength = 3;
+      if (difficulty === 'medium') wordLength = 4;
+      if (difficulty === 'hard') wordLength = 5;
+      
+      // Fetch two random words with the same length
+      const startWordRes = await fetch(`/api/random-word?length=${wordLength}&difficulty=${difficulty}`);
+      if (!startWordRes.ok) throw new Error('Failed to fetch start word');
+      const startWordData = await startWordRes.json();
+      
+      const endWordRes = await fetch(`/api/random-word?length=${wordLength}&difficulty=${difficulty}`);
+      if (!endWordRes.ok) throw new Error('Failed to fetch end word');
+      const endWordData = await endWordRes.json();
+      
+      let startWord = startWordData.word.toUpperCase();
+      let endWord = endWordData.word.toUpperCase();
+      
+      // Make sure we don't get the same word for start and end
+      if (startWord === endWord) {
+        // Try to get a different end word
+        const anotherEndWordRes = await fetch(`/api/random-word?length=${wordLength}&difficulty=${difficulty}`);
+        if (anotherEndWordRes.ok) {
+          const anotherEndWordData = await anotherEndWordRes.json();
+          endWord = anotherEndWordData.word.toUpperCase();
+        }
+        
+        // If we still have the same word, modify one letter
+        if (startWord === endWord) {
+          const letters = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ';
+          const pos = Math.floor(Math.random() * endWord.length);
+          const currentLetter = endWord[pos];
+          let newLetter;
+          
+          do {
+            newLetter = letters[Math.floor(Math.random() * letters.length)];
+          } while (newLetter === currentLetter);
+          
+          endWord = endWord.substring(0, pos) + newLetter + endWord.substring(pos + 1);
+        }
+      }
+      
+      return { startWord, endWord };
+    } catch (error) {
+      console.error('Error generating random puzzle:', error);
+      
+      // Fallback to local word generation if the API fails
+      const startWord = await getRandomWordWithDifficulty(difficulty);
+      let endWord = await getRandomWordWithDifficulty(difficulty);
+      
+      // Make sure they're not the same word
+      while (startWord.toUpperCase() === endWord.toUpperCase()) {
+        endWord = await getRandomWordWithDifficulty(difficulty);
+      }
+      
+      return { 
+        startWord: startWord.toUpperCase(), 
+        endWord: endWord.toUpperCase() 
+      };
+    } finally {
+      setIsGeneratingPuzzle(false);
+    }
+  }, []);
+
+  const startNewGame = useCallback(async (startWord: string, endWord: string, difficulty: DifficultyLevel): Promise<boolean> => {
+    // If both words are empty, generate a random puzzle
+    if (!startWord && !endWord) {
+      try {
+        const { startWord: generatedStart, endWord: generatedEnd } = await generateRandomPuzzle(difficulty);
+        startWord = generatedStart;
+        endWord = generatedEnd;
+      } catch (err) {
+        setError('Failed to generate random puzzle. Please try again or enter words manually.');
+        return false;
+      }
+    } else if (!startWord || !endWord) {
       setError('Both start and end words are required');
       return false;
     }
@@ -146,7 +227,7 @@ export function useGameState() {
     setHints([]);
     
     return true;
-  }, []);
+  }, [generateRandomPuzzle]);
 
   const continueGame = useCallback(() => {
     if (gameState.startWord && gameState.endWord) {
@@ -247,14 +328,78 @@ export function useGameState() {
     }
   }, [gameState, stats]);
 
+  const undoLastMove = useCallback(() => {
+    if (gameState.wordChain.length <= 1) {
+      return false; // Nothing to undo
+    }
+    
+    setGameState(prev => ({
+      ...prev,
+      wordChain: prev.wordChain.slice(0, -1),
+      moves: prev.moves > 0 ? prev.moves - 1 : 0
+    }));
+    
+    setError('');
+    return true;
+  }, [gameState]);
+
+  const resetCurrentGame = useCallback(() => {
+    if (gameState.startWord && gameState.endWord) {
+      const initialItem: WordItem = {
+        word: gameState.startWord,
+        isValid: true
+      };
+      
+      setGameState(prev => ({
+        ...prev,
+        wordChain: [initialItem],
+        currentWord: '',
+        moves: 0,
+        startTime: Date.now(),
+        endTime: null,
+        isGameComplete: false
+      }));
+      
+      setElapsedTime(0);
+      setError('');
+      setHints([]);
+      
+      return true;
+    }
+    return false;
+  }, [gameState]);
+
   const generateHints = useCallback(async () => {
-    // This would ideally call the API to get possible valid words
-    // For now, let's simulate hints
+    if (!gameState.wordChain.length) return;
+    
+    setError('');
+    
+    try {
+      const lastWord = gameState.wordChain[gameState.wordChain.length - 1].word;
+      
+      // Call the API to get hints
+      const response = await fetch(`/api/word-hints?word=${lastWord.toLowerCase()}&limit=3`);
+      if (!response.ok) throw new Error('Failed to fetch hints');
+      
+      const data = await response.json();
+      setHints(data.hints || []);
+      
+      if (data.hints?.length === 0) {
+        // Fallback to simple hints if no API hints
+        generateFallbackHints();
+      }
+    } catch (error) {
+      console.error('Error getting hints:', error);
+      // Fallback to simple hints
+      generateFallbackHints();
+    }
+  }, [gameState]);
+
+  const generateFallbackHints = useCallback(() => {
     const lastWord = gameState.wordChain[gameState.wordChain.length - 1].word;
     const target = gameState.endWord;
     
     // Simple hint strategy: For demo purposes only
-    // In a real app, you would use the dictionary API to get valid hints
     const possibleHints = [];
     
     // Try changing letters to match the target word
@@ -264,9 +409,6 @@ export function useGameState() {
         possibleHints.push(hint);
       }
     }
-    
-    // Simulate API validation delay
-    await new Promise(resolve => setTimeout(resolve, 300));
     
     // Only show 2 hints max
     setHints(possibleHints.slice(0, 2));
@@ -310,11 +452,15 @@ export function useGameState() {
     hasSavedGame,
     hints,
     progress,
+    isGeneratingPuzzle,
     startNewGame,
     continueGame,
     submitWord,
     resetGame,
     updateSettings,
-    generateHints
+    generateHints,
+    undoLastMove,
+    resetCurrentGame,
+    generateRandomPuzzle
   };
 }
