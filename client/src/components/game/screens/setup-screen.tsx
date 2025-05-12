@@ -18,12 +18,12 @@ export function SetupScreen({ onStartGame, onCancel, error, isGeneratingPuzzle =
   const [difficulty, setDifficulty] = useState<DifficultyLevel>('easy');
   const [useManualInput, setUseManualInput] = useState(false);
 
-  const handleStartGame = () => {
+  const handleStartGame = async () => {
     if (useManualInput) {
-      onStartGame(startWord, endWord, difficulty);
+      await onStartGame(startWord, endWord, difficulty);
     } else {
       // Pass empty strings to trigger random word generation
-      onStartGame('', '', difficulty);
+      await onStartGame('', '', difficulty);
     }
   };
 
