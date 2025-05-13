@@ -13,6 +13,7 @@ interface GameplayScreenProps {
   progress: number;
   error: string;
   hints: string[];
+  optimalMoves?: number;
   onSubmitWord: (word: string) => Promise<boolean>;
   onGenerateHints: () => Promise<void>;
   onUndoMove: () => boolean;
@@ -26,6 +27,7 @@ export function GameplayScreen({
   progress,
   error,
   hints,
+  optimalMoves = 0,
   onSubmitWord,
   onGenerateHints,
   onUndoMove,
@@ -64,10 +66,11 @@ export function GameplayScreen({
   return (
     <section className="flex-1 flex flex-col">
       {/* Game progress bar */}
-      <div className="py-2 px-4 bg-gray-50 border-b">
+      <div className="py-2 px-4 border-b" style={{ backgroundColor: 'var(--card-bg)' }}>
         <div className="flex items-center justify-between text-sm mb-1">
-          <span className="font-medium">Moves: <span className="font-bold text-primary-600">{gameState.moves}</span></span>
-          <span className="font-medium">Time: <span className="text-gray-700">{formatTime(elapsedTime)}</span></span>
+          <span className="font-medium">Moves: <span className="font-bold" style={{ color: 'var(--changed-color)' }}>{gameState.moves}</span></span>
+          <span className="font-medium" style={{ color: 'var(--changed-color)' }}>Optimal: {optimalMoves}</span>
+          <span className="font-medium">Time: <span style={{ opacity: 0.8 }}>{formatTime(elapsedTime)}</span></span>
         </div>
         <Progress value={progress} className="h-2" />
       </div>
@@ -76,22 +79,22 @@ export function GameplayScreen({
       <div className="flex-1 overflow-y-auto px-4 py-3">
         <div className="flex justify-between items-center mb-3">
           <div className="flex flex-col">
-            <span className="text-xs text-gray-500">Start Word</span>
-            <span className="font-mono font-bold text-lg text-gray-800">{gameState.startWord}</span>
+            <span className="text-xs opacity-60">Start Word</span>
+            <span className="font-mono font-bold text-lg">{gameState.startWord}</span>
           </div>
           <div className="flex flex-col items-end">
-            <span className="text-xs text-gray-500">Target Word</span>
-            <span className="font-mono font-bold text-lg text-primary-600">{gameState.endWord}</span>
+            <span className="text-xs opacity-60">Target Word</span>
+            <span className="font-mono font-bold text-lg" style={{ color: 'var(--changed-color)' }}>{gameState.endWord}</span>
           </div>
         </div>
         
-        <div className="bg-gray-50 p-3 rounded-lg mb-4 text-xs">
+        <div className="p-3 rounded-lg mb-4 text-xs" style={{ backgroundColor: 'var(--legend-bg)' }}>
           <div className="flex items-center mb-1">
-            <div className="w-4 h-4 bg-green-500 rounded-sm mr-2"></div>
+            <div className="w-4 h-4 rounded-sm mr-2" style={{ backgroundColor: 'var(--correct-letter-bg)' }}></div>
             <span>Letter matches the target word</span>
           </div>
           <div className="flex items-center">
-            <div className="w-4 h-4 bg-blue-500 rounded-sm mr-2"></div>
+            <div className="w-4 h-4 rounded-sm mr-2" style={{ backgroundColor: 'var(--changed-letter-bg)' }}></div>
             <span>Letter changed from previous word</span>
           </div>
         </div>
@@ -101,7 +104,8 @@ export function GameplayScreen({
           <Button
             size="sm"
             variant="outline"
-            className="text-gray-600 text-xs"
+            className="text-xs"
+            style={{ backgroundColor: 'var(--card-bg)', borderColor: 'var(--letter-bg)' }}
             onClick={onUndoMove}
             disabled={gameState.wordChain.length <= 1}
           >
@@ -111,7 +115,8 @@ export function GameplayScreen({
           <Button
             size="sm"
             variant="outline"
-            className="text-gray-600 text-xs"
+            className="text-xs"
+            style={{ backgroundColor: 'var(--card-bg)', borderColor: 'var(--letter-bg)' }}
             onClick={onResetGame}
           >
             <i className="fas fa-sync-alt mr-1"></i> Reset
