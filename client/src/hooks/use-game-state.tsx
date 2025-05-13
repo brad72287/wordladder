@@ -386,9 +386,24 @@ export function useGameState() {
     const secs = seconds % 60;
     return `${mins.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
   };
+  
+  // Calculate optimal number of moves (Levenshtein distance)
+  const calculateOptimalMoves = () => {
+    if (!gameState.startWord || !gameState.endWord) return 0;
+    
+    let differentLetters = 0;
+    for (let i = 0; i < gameState.startWord.length; i++) {
+      if (gameState.startWord[i] !== gameState.endWord[i]) {
+        differentLetters++;
+      }
+    }
+    return differentLetters;
+  };
+  
+  const optimalMoves = calculateOptimalMoves();
 
   const progress = gameState.wordChain.length > 1 
-    ? Math.min(100, Math.round((gameState.wordChain.length - 1) / (gameState.endWord.length * 1.5) * 100))
+    ? Math.min(100, Math.round((gameState.wordChain.length - 1) / (optimalMoves * 1.5) * 100))
     : 0;
 
   // Empty array for hints to maintain interface compatibility
@@ -406,6 +421,7 @@ export function useGameState() {
     hasSavedGame,
     hints,
     progress,
+    optimalMoves,
     isGeneratingPuzzle,
     startNewGame,
     continueGame,

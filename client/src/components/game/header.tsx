@@ -8,7 +8,7 @@ interface GameHeaderProps {
 
 export function GameHeader({ onHelpClick, onStatsClick, onSettingsClick }: GameHeaderProps) {
   return (
-    <header className="bg-primary-600 text-white px-4 py-3 shadow-md">
+    <header style={{ backgroundColor: 'var(--header-bg)', color: 'var(--header-text)' }} className="px-4 py-3 shadow-md">
       <div className="flex items-center justify-between">
         <h1 className="text-xl font-bold">Word Ladder</h1>
         <div className="flex space-x-3">

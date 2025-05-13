@@ -16,7 +16,7 @@ export function GameContainer() {
   const [showSettings, setShowSettings] = useState(false);
 
   return (
-    <div className="max-w-md mx-auto bg-white min-h-screen flex flex-col">
+    <div className="max-w-md mx-auto dark min-h-screen flex flex-col" style={{ backgroundColor: 'var(--game-bg)' }}>
       <GameHeader 
         onHelpClick={() => setShowInstructions(true)} 
         onStatsClick={() => setShowStats(true)}

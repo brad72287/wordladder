@@ -24,15 +24,15 @@ export function WordChainItem({
   
   return (
     <div 
-      className={cn(
-        "word-chain-item p-2 rounded-lg border shadow-sm animate-slideUp",
-        isCurrent 
-          ? "border-2 border-primary-500 bg-white shadow" 
-          : "border-gray-200 bg-white"
-      )}
+      style={{ 
+        backgroundColor: 'var(--card-bg)', 
+        borderColor: isCurrent ? 'var(--changed-color)' : 'var(--letter-bg)', 
+        borderWidth: isCurrent ? '2px' : '1px' 
+      }}
+      className="word-chain-item p-2 rounded-lg border shadow-sm animate-slideUp"
     >
       <div className="flex justify-between items-center">
-        <span className="text-xs text-gray-500">#{index}</span>
+        <span className="text-xs opacity-60">#{index}</span>
         <div className="flex space-x-1">
           {word.split('').map((letter, letterIndex) => (
             <LetterBlock 
@@ -46,13 +46,14 @@ export function WordChainItem({
           ))}
         </div>
         {!isCurrent ? (
-          <span className={cn(isValid ? "text-success-500" : "text-error-500")}>
+          <span style={{ color: isValid ? 'var(--success-color)' : 'var(--destructive)' }}>
             <i className={isValid ? "fas fa-check-circle" : "fas fa-times-circle"}></i>
           </span>
         ) : (
           <IconButton 
             iconClass="fas fa-paper-plane" 
-            className="text-primary-600 hover:text-primary-700 bg-transparent" 
+            style={{ color: 'var(--changed-color)' }}
+            className="hover:opacity-80 bg-transparent" 
             onClick={onSubmit}
             aria-label="Submit word"
           />
