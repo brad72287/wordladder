@@ -69,43 +69,46 @@ export function CompleteScreen({ gameState, onPlayAgain, onBackToHome }: Complet
     <section className="flex-1 flex flex-col p-4">
       <div className="flex-1 flex flex-col items-center justify-center space-y-8 py-10">
         <div className="text-center">
-          <h2 className="text-3xl font-bold text-primary-600 mb-2">Congratulations!</h2>
-          <p className="text-gray-600">You completed the word ladder!</p>
+          <h2 className="text-3xl font-bold mb-2" style={{ color: 'var(--changed-color)' }}>Congratulations!</h2>
+          <p className="opacity-80">You completed the word ladder!</p>
         </div>
         
-        <div className="bg-primary-50 border border-primary-200 rounded-lg p-5 max-w-xs w-full">
-          <h3 className="font-semibold mb-3 text-center text-primary-700">Your Results</h3>
+        <div className="rounded-lg p-5 max-w-xs w-full" style={{ backgroundColor: 'var(--card-bg)', borderColor: 'var(--border)', borderWidth: '1px' }}>
+          <h3 className="font-semibold mb-3 text-center" style={{ color: 'var(--changed-color)' }}>Your Results</h3>
           <div className="space-y-3">
             <div className="flex justify-between items-center">
-              <span className="text-gray-700">Words Used:</span>
+              <span className="opacity-80">Words Used:</span>
               <span className="font-bold">{gameState.wordChain.length}</span>
             </div>
             <div className="flex justify-between items-center">
-              <span className="text-gray-700">Time:</span>
+              <span className="opacity-80">Time:</span>
               <span className="font-bold">{getTimeFromGame()}</span>
             </div>
             <div className="flex justify-between items-center">
-              <span className="text-gray-700">Efficiency:</span>
-              <span className="font-bold text-success-500">{calculateEfficiency()}</span>
+              <span className="opacity-80">Efficiency:</span>
+              <span className="font-bold" style={{ color: 'var(--success-color)' }}>{calculateEfficiency()}</span>
             </div>
           </div>
         </div>
         
         <div className="w-full max-w-xs space-y-3">
           <Button 
-            className="w-full bg-primary-600 hover:bg-primary-700 text-white font-medium py-3 px-4 rounded-lg shadow transition-colors flex items-center justify-center h-auto"
+            className="w-full font-medium py-3 px-4 rounded-lg shadow transition-colors flex items-center justify-center h-auto hover:opacity-90"
+            style={{ backgroundColor: 'var(--changed-color)', color: 'white' }}
             onClick={shareResults}
           >
             <i className="fas fa-share-alt mr-2"></i> Share Results
           </Button>
           <Button 
-            className="w-full bg-gray-200 hover:bg-gray-300 text-gray-800 font-medium py-3 px-4 rounded-lg shadow transition-colors h-auto"
+            className="w-full font-medium py-3 px-4 rounded-lg shadow transition-colors h-auto hover:opacity-90"
+            style={{ backgroundColor: 'var(--correct-letter-bg)', color: 'white' }}
             onClick={onPlayAgain}
           >
             Play Again
           </Button>
           <Button 
-            className="w-full bg-white hover:bg-gray-100 text-gray-700 font-medium py-2 px-4 rounded-lg border border-gray-300 transition-colors h-auto"
+            className="w-full font-medium py-2 px-4 rounded-lg transition-colors h-auto hover:opacity-80"
+            style={{ backgroundColor: 'var(--card-bg)', color: 'var(--letter-text)', borderColor: 'var(--letter-bg)', borderWidth: '1px' }}
             onClick={onBackToHome}
           >
             Back to Home

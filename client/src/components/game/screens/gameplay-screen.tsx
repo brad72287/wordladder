@@ -152,21 +152,26 @@ export function GameplayScreen({
         
         {/* Error message */}
         {error && (
-          <div className="mb-4 text-error-500 text-sm font-medium bg-red-50 p-3 rounded-md">
+          <div className="mb-4 text-sm font-medium p-3 rounded-md" style={{ backgroundColor: 'var(--destructive)', color: 'var(--destructive-foreground)' }}>
             {error}
           </div>
         )}
       </div>
       
       {/* Word input area */}
-      <div className="p-4 border-t bg-gray-50">
+      <div className="p-4 border-t" style={{ backgroundColor: 'var(--card-bg)' }}>
         <div className="mb-4">
-          <h3 className="text-sm font-medium text-gray-700 mb-2">Enter your next word:</h3>
+          <h3 className="text-sm font-medium mb-2">Enter your next word:</h3>
           <div className="flex space-x-2">
             <Input 
               ref={wordInputRef}
               type="text" 
-              className="flex-1 px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent outline-none text-lg font-mono uppercase h-auto"
+              style={{ 
+                backgroundColor: 'var(--letter-bg)', 
+                color: 'var(--letter-text)', 
+                borderColor: 'var(--letter-bg)' 
+              }}
+              className="flex-1 px-4 py-3 rounded-lg focus:ring-2 focus:border-transparent outline-none text-lg font-mono uppercase h-auto"
               placeholder={gameState.wordChain.length > 0 ? "" : "Enter word"}
               maxLength={gameState.startWord.length}
               value={currentWord}
@@ -174,7 +179,8 @@ export function GameplayScreen({
               onKeyDown={(e) => e.key === 'Enter' && handleSubmitWord()}
             />
             <Button 
-              className="bg-primary-600 hover:bg-primary-700 text-white font-medium py-3 px-5 rounded-lg shadow transition-colors h-auto"
+              style={{ backgroundColor: 'var(--changed-color)', color: 'white' }}
+              className="font-medium py-3 px-5 rounded-lg shadow transition-colors h-auto hover:opacity-90"
               onClick={handleSubmitWord}
               disabled={!currentWord || isSubmitting}
             >
