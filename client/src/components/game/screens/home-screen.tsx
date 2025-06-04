@@ -4,9 +4,10 @@ interface HomeScreenProps {
   onNewGame: () => void;
   onContinueGame: () => boolean;
   hasSavedGame: boolean;
+  onStartTimeAttack: () => void;
 }
 
-export function HomeScreen({ onNewGame, onContinueGame, hasSavedGame }: HomeScreenProps) {
+export function HomeScreen({ onNewGame, onContinueGame, hasSavedGame, onStartTimeAttack }: HomeScreenProps) {
   return (
     <section className="flex-1 flex flex-col p-4">
       <div className="flex-1 flex flex-col items-center justify-center space-y-8 py-10">
@@ -29,6 +30,14 @@ export function HomeScreen({ onNewGame, onContinueGame, hasSavedGame }: HomeScre
             disabled={!hasSavedGame}
           >
             Continue Game
+          </Button>
+
+          <Button
+            onClick={onStartTimeAttack}
+            variant="outline"
+            className="w-full mt-3 border-primary-600 text-primary-600 hover:bg-primary-50 hover:text-primary-700 font-medium py-3 px-4 rounded-lg shadow transition-colors h-auto"
+          >
+            Time Attack
           </Button>
         </div>
         

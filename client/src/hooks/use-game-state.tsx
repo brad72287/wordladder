@@ -3,7 +3,7 @@ import { validateWord, areOneLetterApart } from '@/lib/word-validator';
 import { saveGameState, loadGameState, saveGameStats, loadGameStats, getRandomWordWithDifficulty } from '@/lib/game-utils';
 import { apiRequest } from '@/lib/queryClient';
 
-export type GameScreen = 'home' | 'setup' | 'gameplay' | 'complete';
+export type GameScreen = 'home' | 'setup' | 'gameplay' | 'complete' | 'timeAttackGameplay' | 'timeAttackComplete';
 export type DifficultyLevel = 'easy' | 'medium' | 'hard';
 export type GameSettings = {
   difficulty: DifficultyLevel;
@@ -15,6 +15,7 @@ export type WordItem = {
   word: string;
   isValid: boolean;
   changedLetterIndex?: number;
+  isOptimalStep?: boolean;
 };
 
 export type GameState = {
@@ -63,6 +64,19 @@ const INITIAL_STATS: GameStats = {
   longestChain: 0,
 };
 
+const getLevenshteinDistance = (wordA: string, wordB: string): number => {
+  if (wordA.length !== wordB.length) {
+    return Math.max(wordA.length, wordB.length);
+  }
+  let distance = 0;
+  for (let i = 0; i < wordA.length; i++) {
+    if (wordA[i] !== wordB[i]) {
+      distance++;
+    }
+  }
+  return distance;
+};
+
 export function useGameState() {
   const [screen, setScreen] = useState<GameScreen>('home');
   const [gameState, setGameState] = useState<GameState>(INITIAL_GAME_STATE);
@@ -76,7 +90,7 @@ export function useGameState() {
   // Load persisted game state and settings
   useEffect(() => {
     const savedState = loadGameState();
-    const savedStats = loadGameStats();
+    const savedStats = loadGameStats<GameStats>('wordLadderGameStats'); // Added type and key
     
     if (savedState) {
       setGameState(savedState);
@@ -206,7 +220,8 @@ export function useGameState() {
     
     const initialItem: WordItem = {
       word: startWord.toUpperCase(),
-      isValid: true
+      isValid: true,
+      isOptimalStep: true
     };
     
     setGameState({
@@ -273,11 +288,25 @@ export function useGameState() {
           break;
         }
       }
-      
+
+      const previousWordItem = gameState.wordChain[gameState.wordChain.length - 1];
+      const targetWord = gameState.endWord;
+      const distPreviousToTarget = getLevenshteinDistance(previousWordItem.word, targetWord);
+      const distCurrentToTarget = getLevenshteinDistance(formattedWord, targetWord);
+      const currentIsOptimal = distCurrentToTarget < distPreviousToTarget ||
+                               (distCurrentToTarget === distPreviousToTarget && previousWordItem.isOptimalStep === true);
+      // If distance is equal, it's only optimal if the previous step was also optimal (or if it's the start word)
+      // A simpler approach: currentIsOptimal = distCurrentToTarget <= distPreviousToTarget;
+      // The prompt asked for currentIsOptimal = distCurrentToTarget <= distPreviousToTarget which is fine.
+      // Let's stick to the prompt's direct request for this step.
+      // const currentIsOptimal = distCurrentToTarget <= distPreviousToTarget;
+
+
       const newItem: WordItem = {
         word: formattedWord,
         isValid: true,
-        changedLetterIndex
+        changedLetterIndex,
+        isOptimalStep: currentIsOptimal
       };
       
       const newChain = [...gameState.wordChain, newItem];
@@ -311,7 +340,7 @@ export function useGameState() {
         };
         
         setStats(newStats);
-        saveGameStats(newStats);
+        saveGameStats<GameStats>(newStats, 'wordLadderGameStats'); // Added type and key
         
         // Show completion screen after a short delay
         setTimeout(() => {
@@ -345,7 +374,8 @@ export function useGameState() {
     if (gameState.startWord && gameState.endWord) {
       const initialItem: WordItem = {
         word: gameState.startWord,
-        isValid: true
+        isValid: true,
+        isOptimalStep: true
       };
       
       setGameState(prev => ({

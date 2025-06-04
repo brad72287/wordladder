@@ -132,6 +132,7 @@ export function GameplayScreen({
               word={item.word}
               isValid={item.isValid}
               changedLetterIndex={item.changedLetterIndex}
+              isOptimalStep={item.isOptimalStep} // Pass the new prop
               targetWord={gameState.endWord}
               isCurrent={false}
             />

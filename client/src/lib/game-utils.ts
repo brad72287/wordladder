@@ -24,27 +24,24 @@ export const loadGameState = (): GameState | null => {
 };
 
 // Save game statistics to localStorage
-export const saveGameStats = (stats: GameStats): void => {
+export function saveGameStats<T>(stats: T, key: string): void {
   try {
-    localStorage.setItem('wordLadderStats', JSON.stringify(stats));
-  } catch (err) {
+    localStorage.setItem(key, JSON.stringify(stats));
+  } catch (err)
     console.error('Error saving game stats:', err);
   }
-};
+}
 
 // Load game statistics from localStorage
-export const loadGameStats = (): GameStats | null => {
+export function loadGameStats<T>(key: string): T | null {
   try {
-    const savedStats = localStorage.getItem('wordLadderStats');
-    if (savedStats) {
-      return JSON.parse(savedStats);
-    }
-    return null;
+    const statsJson = localStorage.getItem(key);
+    return statsJson ? JSON.parse(statsJson) as T : null;
   } catch (err) {
     console.error('Error loading game stats:', err);
     return null;
   }
-};
+}
 
 // Calculate word difficulty based on length and common letters
 export const calculateWordDifficulty = (word: string): 'easy' | 'medium' | 'hard' => {
